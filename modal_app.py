@@ -11,7 +11,7 @@ import modal
 
 
 APP_NAME = os.environ.get("MODAL_APP_NAME", "forge-neo")
-IMAGE_NAME = os.environ.get("FORGE_NEO_IMAGE", "ghcr.io/anqipudding/forge-neo-modal-image:latest")
+IMAGE_NAME = os.environ.get("FORGE_NEO_IMAGE", "ghcr.io/anqipudding/forge-neo-modal-deploy:latest")
 GPU_TYPE = os.environ.get("MODAL_GPU", "L40S")
 VOLUME_NAME = os.environ.get("MODAL_VOLUME_NAME", f"{APP_NAME}-data")
 JUPYTER_TOKEN = os.environ.get("JUPYTER_TOKEN", "forge-neo")
