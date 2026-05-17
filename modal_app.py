@@ -85,7 +85,6 @@ def mirror_forge_log(interval_seconds: int = 10) -> None:
             text = LOCAL_FORGE_LOG.read_text(errors="replace")
             if text == last_text:
                 continue
-            FORGE_LOG.parent.mkdir(parents=True, exist_ok=True)
             FORGE_LOG.write_text(text, encoding="utf-8", errors="replace")
             last_text = text
         except Exception as exc:
