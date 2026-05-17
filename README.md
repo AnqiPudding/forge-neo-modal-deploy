@@ -49,6 +49,7 @@ MODAL_APP_NAME=forge-neo
 MODAL_GPU=L40S
 MODAL_VOLUME_NAME=forge-neo-data
 FORGE_NEO_IMAGE=docker.io/anqipudding/forge-neo-modal-image:latest
+MODAL_FORCE_IMAGE_PULL=1
 JUPYTER_TOKEN=forge-neo
 MODAL_SCALEDOWN_WINDOW=120
 MODAL_MIN_CONTAINERS=0

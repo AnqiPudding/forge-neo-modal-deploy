@@ -17,6 +17,7 @@ VOLUME_NAME = os.environ.get("MODAL_VOLUME_NAME", f"{APP_NAME}-data")
 JUPYTER_TOKEN = os.environ.get("JUPYTER_TOKEN", "forge-neo")
 SCALEDOWN_WINDOW = int(os.environ.get("MODAL_SCALEDOWN_WINDOW", "120"))
 MIN_CONTAINERS = int(os.environ.get("MODAL_MIN_CONTAINERS", "0"))
+FORCE_IMAGE_PULL = os.environ.get("MODAL_FORCE_IMAGE_PULL", "1").lower() not in {"0", "false", "no"}
 
 DATA_DIR = Path("/data")
 FORGE_DIR = Path("/opt/forge-neo")
@@ -24,7 +25,7 @@ LOG_DIR = DATA_DIR / "logs"
 FORGE_LOG = LOG_DIR / "forge.log"
 
 volume = modal.Volume.from_name(VOLUME_NAME, create_if_missing=True, version=2)
-image = modal.Image.from_registry(IMAGE_NAME, force_build=False)
+image = modal.Image.from_registry(IMAGE_NAME, force_build=FORCE_IMAGE_PULL)
 app = modal.App(APP_NAME, image=image)
 
 COMMON_ENV = {
