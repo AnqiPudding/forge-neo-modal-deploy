@@ -23,6 +23,7 @@ DATA_DIR = Path("/data")
 FORGE_DIR = Path("/opt/forge-neo")
 LOG_DIR = DATA_DIR / "logs"
 FORGE_LOG = LOG_DIR / "forge.log"
+LOCAL_FORGE_LOG = Path("/tmp/forge.log")
 
 volume = modal.Volume.from_name(VOLUME_NAME, create_if_missing=True, version=2)
 image = modal.Image.from_registry(IMAGE_NAME, force_build=FORCE_IMAGE_PULL)
@@ -74,6 +75,23 @@ def keep_committing(interval_seconds: int = 30, reload_after_commit: bool = Fals
             print(f"Volume sync skipped: {exc}", flush=True)
 
 
+def mirror_forge_log(interval_seconds: int = 10) -> None:
+    last_text = ""
+    while True:
+        time.sleep(interval_seconds)
+        try:
+            if not LOCAL_FORGE_LOG.exists():
+                continue
+            text = LOCAL_FORGE_LOG.read_text(errors="replace")
+            if text == last_text:
+                continue
+            FORGE_LOG.parent.mkdir(parents=True, exist_ok=True)
+            FORGE_LOG.write_text(text, encoding="utf-8", errors="replace")
+            last_text = text
+        except Exception as exc:
+            print(f"Forge log mirror skipped: {exc}", flush=True)
+
+
 def reload_volume(context: str) -> None:
     try:
         volume.reload()
@@ -116,7 +134,6 @@ def patch_forge_volume_refresh() -> None:
         _volume_name = os.environ.get("MODAL_VOLUME_NAME")
         if _volume_name:
             _volume = _modal.Volume.from_name(_volume_name, create_if_missing=True, version=2)
-            _volume.commit()
             _volume.reload()
     except Exception as exc:
         logger.warning(f"Modal volume refresh skipped: {exc}")
@@ -180,9 +197,10 @@ def forge() -> None:
         kwargs={"interval_seconds": 30, "reload_after_commit": False},
         daemon=True,
     ).start()
+    threading.Thread(target=mirror_forge_log, kwargs={"interval_seconds": 10}, daemon=True).start()
 
-    FORGE_LOG.parent.mkdir(parents=True, exist_ok=True)
-    log = FORGE_LOG.open("ab", buffering=0)
+    LOCAL_FORGE_LOG.unlink(missing_ok=True)
+    log = LOCAL_FORGE_LOG.open("ab", buffering=0)
     log.write(b"\n\n=== Starting Forge-Neo on Modal ===\n")
 
     cmd = ["start-forge", *shlex.split(os.environ.get("FORGE_EXTRA_ARGS", ""))]
